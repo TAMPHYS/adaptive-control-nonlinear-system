@@ -148,6 +148,10 @@ The results demonstrate that:
 
 
 python analysis.py
-# <img width="580" height="455" alt="image" src="https://github.com/user-attachments/assets/2cf34076-6b10-4946-9a0d-d6365d9ceac7" />
- #   <img width="562" height="455" alt="image" src="https://github.com/user-attachments/assets/8c8c637b-17e0-45a0-84ce-198f754dc733" />
-# <img width="590" height="455" alt="image" src="https://github.com/user-attachments/assets/06edc90f-6a1f-489f-8ecd-3035bd484ab6" />
+# <img width="859" height="547" alt="image" src="https://github.com/user-attachments/assets/8406fff3-d1d4-4ef4-894a-e437992a8645" />
+
+ #   <img width="850" height="547" alt="image" src="https://github.com/user-attachments/assets/f37822d3-9655-4723-83fe-7ad9e569baef" />
+
+# <img width="859" height="547" alt="image" src="https://github.com/user-attachments/assets/0da0ab8f-daaf-438c-bbe3-3185f4517758" />
+
+# <img width="833" height="547" alt="image" src="https://github.com/user-attachments/assets/0b907e42-67cd-4f0b-9727-0c19bfae27a8" />
