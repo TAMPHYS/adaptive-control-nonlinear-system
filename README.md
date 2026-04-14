@@ -91,7 +91,46 @@ This captures both:
 
 ---
 
-## Results
+
+# Full Details of the Simulation (Summary)
+Model Type
+
+Discrete-time Euler integration of thermal blooming ODE with adaptive bang-bang-like policy.
+Time horizon: 30 s (drone engagement window).
+Timestep: dt = 0.05 s (600 steps).
+
+Fixed (Deterministic) Parameters
+
+P_max = 50 000 W
+L0 = 5 km (reference range)
+A0 = 0.002 m² (reference area)
+Atmospheric attenuation: α = 0.15 km⁻¹
+Strehl exponent: γ = 1.3
+Clearing velocity base: v_eff = 8 m/s
+Aperture: D = 1.0 m (simplified)
+Critical blooming: NB_crit = 1.5
+Geometric modulation: M(t) = sin(π t / T) (zenith window effect)
+
+Stochastic Variables (only when stochastic=True) — 4 independent sources
+
+Overlap efficiency (η): Normal(μ = 0.75, σ = 0.1), clipped [0.5, 1.0]
+Clearing velocity (v): Normal(μ = 8.0, σ = 2.0), clipped [5, 15] m/s
+Turbulence factor: Normal(μ = 1.0, σ = 0.15), clipped [0.7, 1.3] (multiplies Strehl)
+Jitter factor: Normal(μ = 1.0, σ = 0.10), clipped [0.8, 1.2] (quadratic spot-size penalty)
+
+Monte Carlo Settings
+
+Random seed: 42 (fully reproducible)
+Distribution plot (Fig. 5 equivalent): N_SIM = 2000 realizations per strategy
+κ-sweep (Fig. 2 & 3 equivalent): N_SIM = 1000 per κ value (10 κ points)
+Distance sweep (Fig. 7 equivalent): deterministic (stochastic=False)
+
+Results from this exact run
+Distribution @ 5 km (κ₀ = 0.00015, N=2000)
+
+Strategy A (CW): 3861 ± 1396 J/cm² (CV = 36.2%)
+Adaptive (Policy 4): 3315 ± 996 J/cm² (CV = 30.0%)
+Variance ratio (Adaptive / A) = 0.509 (≈49% lower variance)
 
 ### 1. Distribution (5 km)
 - Continuous strategy: higher mean, higher variance  
