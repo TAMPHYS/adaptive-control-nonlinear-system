@@ -178,15 +178,12 @@ The results demonstrate that:
   Generates all plots:
   - fluence distribution  
   - distance scaling  
-  - performance ratio  
+  - risk vs coupling  
   - κ sweep  
 
 ---
 
-## How to Run
 
-
-python analysis.py
 # <img width="859" height="547" alt="image" src="https://github.com/user-attachments/assets/8406fff3-d1d4-4ef4-894a-e437992a8645" />
 
  #   <img width="850" height="547" alt="image" src="https://github.com/user-attachments/assets/f37822d3-9655-4723-83fe-7ad9e569baef" />
