@@ -80,7 +80,13 @@ This captures both:
 - Fails under strong nonlinear feedback  
 
 ---
-
+### Strategy C: (peak burst)
+- The Optimal Phased Playbook (Probe → Strike → Pulse). 
+- three-stage temporal phasing policy.
+- synchronize maximum power delivery with the peak geometric advantage of the zenith window while proactively
+  managing the atmospheric thermal clearing time.
+  
+  ---
 ### Adaptive Policy (Policy 4)
 - State-dependent feedback policy  
 - Modulates input based on:
@@ -96,8 +102,8 @@ This captures both:
 Model Type
 
 Discrete-time Euler integration of thermal blooming ODE with adaptive bang-bang-like policy.
-Time horizon: 30 s (drone engagement window).
-Timestep: dt = 0.05 s (600 steps).
+Time horizon: 5 s (drone engagement window).
+Timestep: dt = 0.01 s (600 steps).
 
 Fixed (Deterministic) Parameters
 
@@ -165,7 +171,8 @@ The results demonstrate that:
 
 - Optimal strategies depend on system regime  
 - Continuous maximization is suboptimal under feedback  
-- Adaptive control improves **risk-adjusted performance**  
+- Adaptive control improves **risk-adjusted performance**
+  
 
 ---
 
@@ -184,10 +191,14 @@ The results demonstrate that:
 ---
 
 
-# <img width="859" height="547" alt="image" src="https://github.com/user-attachments/assets/8406fff3-d1d4-4ef4-894a-e437992a8645" />
+# <img width="859" height="547" alt="image" src="https://github.com/user-attachments/assets/a28f38a7-64be-475a-b0bf-f47637e1d6cb" />
 
- #   <img width="850" height="547" alt="image" src="https://github.com/user-attachments/assets/f37822d3-9655-4723-83fe-7ad9e569baef" />
 
-# <img width="859" height="547" alt="image" src="https://github.com/user-attachments/assets/0da0ab8f-daaf-438c-bbe3-3185f4517758" />
+ #   <img width="859" height="547" alt="image" src="https://github.com/user-attachments/assets/7769f1bb-1b15-4b25-a569-7c36e947aa0d" />
 
-# <img width="833" height="547" alt="image" src="https://github.com/user-attachments/assets/0b907e42-67cd-4f0b-9727-0c19bfae27a8" />
+
+# <img width="846" height="547" alt="image" src="https://github.com/user-attachments/assets/50d5b4d8-aa8b-48fd-b594-889a809e76ec" />
+
+
+# <img width="859" height="547" alt="image" src="https://github.com/user-attachments/assets/48f105a4-25a0-40a2-bb7c-253e0ca9f715" />
+
