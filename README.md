@@ -178,10 +178,8 @@ The results demonstrate that:
 
 ## Code Structure
 
-- `model.py`  
-  Core simulation model and system dynamics  
-
-- `analysis.py`  
+- `analysis.py`
+-  Core simulation model and system dynamics  
   Generates all plots:
   - fluence distribution  
   - distance scaling  
