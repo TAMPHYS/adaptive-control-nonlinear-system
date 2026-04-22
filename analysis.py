@@ -4,27 +4,25 @@ import matplotlib.pyplot as plt
 np.random.seed(42)
 
 # -----------------------------
-# GLOBAL PARAMETERS
+# GLOBAL PARAMETERS (Updated for T=5.0 and PDF 1 alignment)
 # -----------------------------
-T = 30.0
-dt = 0.05
+T = 5.0                 # Shorter engagement window (PDF 1)
+dt = 0.01               # Smoother resolution for 5-second window
 time = np.arange(0, T, dt)
 P_max = 50e3
 L0 = 5.0
 A0 = 0.002
-alpha = 0.15
+alpha = 0.028           # Adjusted to yield ~0.87 atm transmission at 5km (per PDF 1)
 gamma = 1.3
 v_eff_base = 8.0
 D = 1.0
-NB_crit = 1.5
-BURST_START = 10.0   # Strategy C burst window
-BURST_END = 20.0
+NB_crit = 1.0           # Lowered slightly so the Adaptive policy reacts within 5 seconds
 
 def sigmoid(x):
     return 1 / (1 + np.exp(-x))
 
 # -----------------------------
-# SIMULATE FUNCTION (now with Strategy C)
+# SIMULATE FUNCTION
 # -----------------------------
 def simulate(strategy, L, kappa0=0.00015, stochastic=False):
     NB = 0.0
@@ -45,28 +43,42 @@ def simulate(strategy, L, kappa0=0.00015, stochastic=False):
         jitter_factor = 1.0
 
     for t in time:
-        M = np.sin(np.pi * t / T)
+        # Zenith Multiplier: Peaks at 2.5x exactly at t=2.5s (Target directly overhead)
+        M = 2.5 * np.sin(np.pi * t / T)
 
         if strategy == "A":
             P = P_max
         elif strategy == "C":
-            P = P_max if BURST_START <= t <= BURST_END else 0.0
+            # PDF 1 Optimal Playbook: Probe -> Strike -> Pulse
+            if t < 2.0:
+                # Phase 1: Probe (5 kW) - Keeps air cold while tracking converges
+                P = 5000.0
+            elif 2.0 <= t <= 3.5:
+                # Phase 2: Zenith Strike (50 kW) - Max power during geometric advantage
+                P = P_max
+            else:
+                # Phase 3: Thermal Clearing (25 kW Effective Pulse) - 50% Duty cycle
+                P = P_max if (t % 0.2) < 0.1 else 0.0
         elif strategy == "adaptive":
-            P = P_max * sigmoid(6 * M - 10 * NB)
+            # Adaptive uses normalized M (M/2.5) to keep the sigmoid balance intact
+            P = P_max * sigmoid(6 * (M / 2.5) - 10 * NB)
             if NB > NB_crit:
                 P = 0.0
         else:
             P = 0.0
 
+        # Thermal blooming state update
         dNB = kappa_L * P - (v / D) * NB
         NB += dNB * dt
 
+        # Strehl ratio calculation
         S = np.exp(-gamma * NB)
         S *= np.exp(-0.5 * max(0, NB - NB_crit))
         S *= turb_factor
         jitter_degrade = 1.0 / (1.0 + jitter_factor**2)
 
-        I = (P / (A_eff * 1e4)) * S * eta * eta_atm * jitter_degrade
+        # PDF 1 Objective Function: 2x Gaussian Multiplier AND Zenith M factor applied directly
+        I = (2.0 * P / (A_eff * 1e4)) * S * eta * eta_atm * jitter_degrade * M
         F += I * dt
 
     return F
@@ -84,6 +96,8 @@ distances = np.linspace(5, 10, 11)
 # -----------------------------
 # RUN ALL SIMULATIONS
 # -----------------------------
+print("Running simulations, this may take a moment...")
+
 # 1. Distribution @ 5 km
 results_A = np.array([simulate("A", L_test, kappa0=kappa_default, stochastic=True) for _ in range(N_SIM_DIST)])
 results_C = np.array([simulate("C", L_test, kappa0=kappa_default, stochastic=True) for _ in range(N_SIM_DIST)])
@@ -97,7 +111,7 @@ for kappa in kappa_values:
     res_A = np.array([simulate("A", L_test, kappa0=kappa, stochastic=True) for _ in range(N_SIM_K)])
     res_C = np.array([simulate("C", L_test, kappa0=kappa, stochastic=True) for _ in range(N_SIM_K)])
     res_ad = np.array([simulate("adaptive", L_test, kappa0=kappa, stochastic=True) for _ in range(N_SIM_K)])
-    
+
     mean_A.append(np.mean(res_A))
     mean_C.append(np.mean(res_C))
     mean_ad.append(np.mean(res_ad))
@@ -120,9 +134,9 @@ fluence_ad_dist = np.array([simulate("adaptive", L, stochastic=False) for L in d
 # -----------------------------
 # PRINT RESULTS
 # -----------------------------
-print("=== FLUENCE DISTRIBUTION @ 5 km (N=2000) ===")
+print("\n=== FLUENCE DISTRIBUTION @ 5 km (N=2000) ===")
 print(f"Strategy A (CW)   : {results_A.mean():.0f} ± {results_A.std():.0f} J/cm²")
-print(f"Strategy C (Burst): {results_C.mean():.0f} ± {results_C.std():.0f} J/cm²")
+print(f"Strategy C (Phased): {results_C.mean():.0f} ± {results_C.std():.0f} J/cm²")
 print(f"Adaptive (Policy 4): {results_ad.mean():.0f} ± {results_ad.std():.0f} J/cm²")
 
 print("\n=== RISK-REWARD SUMMARY (κ=0.00015) ===")
@@ -134,12 +148,12 @@ print(f"Ad: mean={results_ad.mean():.0f}, var={results_ad.var():.0f}")
 # GENERATE & SAVE ALL PLOTS
 # -----------------------------
 plt.figure(figsize=(10,6))
-plt.hist(results_A, bins=40, alpha=0.6, label="A (CW)")
-plt.hist(results_C, bins=40, alpha=0.6, label="C (Burst)")
-plt.hist(results_ad, bins=40, alpha=0.6, label="Adaptive")
+plt.hist(results_A, bins=40, alpha=0.6, label="A (Brute Force CW)")
+plt.hist(results_C, bins=40, alpha=0.6, label="C (Optimal Phased)")
+plt.hist(results_ad, bins=40, alpha=0.6, label="Adaptive (Policy 4)")
 plt.xlabel("Fluence (J/cm²)")
 plt.ylabel("Frequency")
-plt.title("Fluence Distribution @ 5 km (Fig. 5 equivalent)")
+plt.title("Fluence Distribution @ 5 km")
 plt.legend()
 plt.grid(True)
 plt.savefig("fig5_distribution.png", dpi=300)
@@ -150,7 +164,7 @@ plt.plot(kappa_values, mean_C, 'orange', label="Strategy C", linewidth=2)
 plt.plot(kappa_values, mean_ad, 'g-', label="Adaptive", linewidth=2)
 plt.xlabel("Thermal Coupling κ")
 plt.ylabel("Mean Fluence (J/cm²)")
-plt.title("Mean Performance vs Thermal Coupling (Fig. 2)")
+plt.title("Mean Performance vs Thermal Coupling")
 plt.legend()
 plt.grid(True)
 plt.savefig("fig2_mean_vs_kappa.png", dpi=300)
@@ -161,18 +175,18 @@ plt.plot(kappa_values, var_C, 'orange', label="Strategy C", linewidth=2)
 plt.plot(kappa_values, var_ad, 'g-', label="Adaptive", linewidth=2)
 plt.xlabel("Thermal Coupling κ")
 plt.ylabel("Variance of Fluence")
-plt.title("Risk (Variance) vs Thermal Coupling (Fig. 3)")
+plt.title("Risk (Variance) vs Thermal Coupling")
 plt.legend()
 plt.grid(True)
 plt.savefig("fig3_variance_vs_kappa.png", dpi=300)
 
 plt.figure(figsize=(8,8))
 plt.scatter(var_A, mean_A, s=80, label="A (CW)", color='blue')
-plt.scatter(var_C, mean_C, s=80, label="C (Burst)", color='orange')
+plt.scatter(var_C, mean_C, s=80, label="C (Phased)", color='orange')
 plt.scatter(var_ad, mean_ad, s=80, label="Adaptive", color='green')
 plt.xlabel("Variance (Risk)")
 plt.ylabel("Mean Fluence (Reward)")
-plt.title("Risk-Reward Trade-off (Fig. 4)")
+plt.title("Risk-Reward Trade-off")
 plt.legend()
 plt.grid(True)
 plt.savefig("fig4_risk_reward.png", dpi=300)
@@ -183,7 +197,7 @@ plt.plot(distances, fluence_C_dist, 'orange', label="Strategy C", linewidth=2)
 plt.plot(distances, fluence_ad_dist, 'g-', label="Adaptive", linewidth=2)
 plt.xlabel("Distance (km)")
 plt.ylabel("Fluence (J/cm²)")
-plt.title("Fluence vs Distance (Fig. 7)")
+plt.title("Fluence vs Distance")
 plt.legend()
 plt.grid(True)
 plt.savefig("fig7_fluence_vs_distance.png", dpi=300)
